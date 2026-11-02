@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+
+.auth-shell { min-height: 100vh; display: grid; grid-template-columns: minmax(360px, 42%) 1fr; background: #fbfdfb; }
+.brand-panel { position: relative; display: flex; flex-direction: column; padding: 48px 9%; overflow: hidden; color: #fff; background: linear-gradient(145deg, #123f30 0%, #0e5b3e 52%, #137a50 100%); }
+.brand-panel::before, .brand-panel::after { content: ''; position: absolute; border: 1px solid rgba(172, 244, 202, .16); border-radius: 50%; }
+.brand-panel::before { width: 520px; height: 520px; right: -310px; top: 16%; }
+.brand-panel::after { width: 340px; height: 340px; left: -230px; bottom: -90px; }
+.brand, .brand-content, .brand-footer { position: relative; z-index: 1; }
+.brand { display: flex; align-items: center; gap: 11px; font: 800 24px/1 'Manrope', sans-serif; letter-spacing: -1px; }
+.brand-accent { color: #72e6a9; }
+.logo-mark { display: grid; width: 35px; height: 35px; color: #72e6a9; }
+.logo-mark svg { width: 100%; height: 100%; }
+.brand-content { max-width: 430px; margin: auto 0; }
+.eyebrow { color: #38ad76; font-size: 12px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+.brand-panel .eyebrow { color: #8deebb; }
+.brand-content h1 { margin: 18px 0 22px; color: #fff; font: 800 clamp(34px, 4vw, 56px)/1.08 'Manrope', sans-serif; letter-spacing: -2.6px; }
+.brand-description { max-width: 390px; color: #c3e4d3; font-size: 16px; line-height: 1.7; }
+.brand-footer { display: flex; align-items: center; gap: 10px; color: #a4d5bb; font-size: 12px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #72e6a9; box-shadow: 0 0 0 4px rgba(114, 230, 169, .14); }
+.form-panel { display: grid; place-items: center; padding: 54px 7%; }
+.form-wrap { width: min(100%, 470px); }
+.mobile-brand { display: none; }
+.form-heading h2 { margin: 9px 0 10px; color: #15362a; font: 800 clamp(26px, 3vw, 34px)/1.15 'Manrope', sans-serif; letter-spacing: -1.3px; }
+.form-heading > p:last-child { color: #74857d; font-size: 14px; }
+.auth-switcher { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 30px 0 26px; padding: 4px; border-radius: 10px; background: #eef5f0; }
+.auth-switcher button { padding: 10px; border: 0; border-radius: 7px; color: #789087; background: transparent; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; }
+.auth-switcher button.active { color: #146340; background: #fff; box-shadow: 0 2px 7px rgba(18, 63, 48, .1); }
+form { display: grid; gap: 17px; }
+.signup-fields { display: grid; gap: 16px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field, .password-label { display: grid; gap: 7px; color: #38564a; font-size: 12px; font-weight: 600; }
+.field input, .password-input { width: 100%; box-sizing: border-box; padding: 12px 13px; border: 1px solid #d5e3da; border-radius: 7px; outline: none; color: #1d382d; background: #fff; font: 14px 'DM Sans', sans-serif; transition: border-color .2s, box-shadow .2s; }
+.field input::placeholder, .password-input::placeholder { color: #a5b3ac; }
+.field input:focus, .password-input:focus { border-color: #27a467; box-shadow: 0 0 0 3px rgba(39, 164, 103, .12); }
+.password-label { display: flex; justify-content: space-between; align-items: center; }
+.password-label a, .terms a { color: #198252; text-decoration: none; }
+.password-label a:hover, .terms a:hover { text-decoration: underline; }
+.terms { display: flex; align-items: flex-start; gap: 8px; color: #75867e; font-size: 11px; line-height: 1.5; }
+.terms input { width: 14px; height: 14px; margin: 1px 0 0; accent-color: #198252; }
+.submit-button { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 5px; padding: 13px 18px; border: 0; border-radius: 7px; color: #fff; background: #16804f; font: 700 13px 'DM Sans', sans-serif; cursor: pointer; box-shadow: 0 7px 14px rgba(22, 128, 79, .18); transition: background .2s, transform .2s; }
+.submit-button:hover { background: #106b42; transform: translateY(-1px); }
+.submit-button span { font-size: 19px; line-height: 10px; }
+.form-footnote { margin: 24px 0 0; text-align: center; color: #8a9a92; font-size: 12px; }
+.form-footnote button { padding: 0; border: 0; color: #16804f; background: none; font: 700 12px 'DM Sans', sans-serif; cursor: pointer; }
+@media (max-width: 760px) {
+  .auth-shell { display: block; }
+  .brand-panel { display: none; }
+  .form-panel { min-height: 100vh; box-sizing: border-box; padding: 34px 22px; align-items: start; }
+  .mobile-brand { display: flex; margin-bottom: 60px; color: #153f30; }
+  .mobile-brand .logo-mark { color: #16804f; }
+  .form-wrap { max-width: 500px; }
+}
+@media (max-width: 470px) {
+  .mobile-brand { margin-bottom: 42px; }
+  .field-row { grid-template-columns: 1fr; gap: 16px; }
+  .form-heading h2 { font-size: 27px; }
+}
