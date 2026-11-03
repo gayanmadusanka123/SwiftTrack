@@ -54,4 +54,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+await RoleSeeder.SeedRolesAsync(app.Services);
+
 app.Run();
