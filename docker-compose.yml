@@ -6,7 +6,7 @@ services:
 
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: password
+      MSSQL_SA_PASSWORD: password_123!
       MSSQL_PID: Developer
 
     ports:
