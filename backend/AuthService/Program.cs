@@ -1,7 +1,9 @@
 using AuthService.Data;
 using AuthService.Models;
+using AuthService.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using AuthBusinessService = AuthService.Services.AuthService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,8 @@ builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<IAuthService, AuthBusinessService>();
 
 var app = builder.Build();
 
