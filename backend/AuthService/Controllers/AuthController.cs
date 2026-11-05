@@ -2,6 +2,7 @@
 using AuthService.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AuthService.Controllers;
 
@@ -48,5 +49,22 @@ public class AuthController : ControllerBase
                 message = ex.Message
             });
         }
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult GetCurrentUser()
+    {
+        return Ok(new
+        {
+            UserId = User.FindFirst(
+                System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+
+            Email = User.FindFirst(
+                System.Security.Claims.ClaimTypes.Email)?.Value,
+
+            Roles = User.FindAll(
+                System.Security.Claims.ClaimTypes.Role).Select(role => role.Value).ToList()
+        });
     }
 }

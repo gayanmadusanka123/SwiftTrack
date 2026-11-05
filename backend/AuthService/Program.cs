@@ -5,6 +5,9 @@ using AuthService.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AuthBusinessService = AuthService.Services.AuthService;
+using System.Security.Cryptography;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,18 +40,87 @@ builder.Services
     })
     .AddEntityFrameworkStores<AuthDbContext>().AddDefaultTokenProviders();
 
-builder.Services.AddControllers();
+// 3. Register application services
+builder.Services.AddScoped<IAuthService, AuthBusinessService>();
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// 4. Read JWT settings
+var jwtSettings = builder.Configuration
+    .GetSection("JwtSettings")
+    .Get<JwtSettings>()
+    ?? throw new InvalidOperationException(
+        "JWT settings are missing.");
+
+
+//rsa public key
+var publicKeyBytes = Convert.FromBase64String(jwtSettings.PublicKey);
+var rsa = RSA.Create();
+rsa.ImportSubjectPublicKeyInfo(publicKeyBytes, out _);
+
+var publicSigningKey = new RsaSecurityKey(rsa);
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+
+            ValidateLifetime = true,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = publicSigningKey,
+
+            ValidAlgorithms = new[]
+            {
+                SecurityAlgorithms.RsaSha256
+            },
+
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+        // TEMPORARY DEBUGGING
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine(
+                    "JWT VALIDATION ERROR: " +
+                    context.Exception.ToString());
+
+                return Task.CompletedTask;
+            },
+
+            OnChallenge = context =>
+            {
+                Console.WriteLine(
+                    "JWT CHALLENGE ERROR: " +
+                    context.ErrorDescription);
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
-builder.Services.AddScoped<IAuthService, AuthBusinessService>();
-
-//Configure JWT settings
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-
-//Register JWT token service
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 var app = builder.Build();
 

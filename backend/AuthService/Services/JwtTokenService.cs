@@ -28,9 +28,14 @@ namespace AuthService.Services
             var privateKeyBytes = Convert.FromBase64String(_jwtSettings.PrivateKey);
 
             using var rsa = RSA.Create();
+
             rsa.ImportPkcs8PrivateKey(privateKeyBytes, out _);
 
-            var signingKey = new RsaSecurityKey(rsa);
+            // Export the RSA parameters, including the private key
+            var rsaParameters = rsa.ExportParameters(true);
+
+            // Create the signing key using the RSA parameters
+            var signingKey = new RsaSecurityKey(rsaParameters);
 
             var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.RsaSha256);
 
