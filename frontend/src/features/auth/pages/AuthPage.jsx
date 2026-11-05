@@ -2,25 +2,66 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import AuthFormField from '../components/AuthFormField'
 import LogoMark from '../../../shared/components/LogoMark'
+import { login, register } from '../services/authService'
 import './AuthPage.css'
 
 function AuthPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const [mode, setMode] = useState(
-    location.pathname === '/signup' ? 'signup' : 'login'
-  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+
+  const isLogin = location.pathname !== '/signup'
 
   const changeMode = (newMode) => {
-    setMode(newMode)
-    navigate(newMode === 'signup' ? '/signup' : 'login')
+    setErrorMessage('')
+    setSuccessMessage('')
+    navigate(newMode === 'signup' ? '/signup' : '/login')
   }
 
-  const isLogin = mode === 'login'
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
+
+    setErrorMessage('')
+    setSuccessMessage('')
+    setIsSubmitting(true)
+
+    // Collect all form values
+    const formData = new FormData(event.currentTarget)
+    const values = Object.fromEntries(formData.entries())
+
+    try {
+      if (isLogin) {
+        const result = await login({
+          email: values.email,
+          password: values.password
+        })
+
+        //save JWT token
+        sessionStorage.setItem('accessToken', result.accessToken)
+
+        navigate('/dashboard')
+      } else {
+        await register({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          nic: values.nic,
+          address: values.address,
+          password: values.password,
+          confirmPassword: values.confirmPassword
+        })
+
+        changeMode('login')
+        setSuccessMessage('Account created successfully. Please log in')
+      }
+    } catch (err) {
+      setErrorMessage(err.message || 'Something went wrong.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -59,9 +100,37 @@ function AuthPage() {
           </div>
 
           <div className="auth-switcher" role="tablist" aria-label="Authentication options">
-            <button type="button" className={isLogin ? 'active' : ''} onClick={() => changeMode('login')} role="tab" aria-selected={isLogin}>Log in</button>
-            <button type="button" className={!isLogin ? 'active' : ''} onClick={() => changeMode('signup')} role="tab" aria-selected={!isLogin}>Sign up</button>
+            <button
+              type="button"
+              className={isLogin ? 'active' : ''}
+              onClick={() => changeMode('login')}
+              role="tab"
+              aria-selected={isLogin}
+            >
+              Log in
+            </button>
+
+            <button
+              type="button"
+              className={!isLogin ? 'active' : ''}
+              onClick={() => changeMode('signup')}
+              role="tab"
+              aria-selected={!isLogin}
+            >
+              Sign up
+            </button>
           </div>
+          {errorMessage && (
+            <p className="auth-error" role="alert">
+              {errorMessage}
+            </p>
+          )}
+
+          {successMessage && (
+            <p className="auth-success" role="status">
+              {successMessage}
+            </p>
+          )}
 
           <form onSubmit={handleSubmit}>
             {isLogin ? (
@@ -95,8 +164,8 @@ function AuthPage() {
                 <span>I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>.</span>
               </label>
             )}
-
             <button className="submit-button" type="submit">{isLogin ? 'Log in to SwiftTrack' : 'Create SwiftTrack account'} <span aria-hidden="true">→</span></button>
+
           </form>
 
           <p className="form-footnote">

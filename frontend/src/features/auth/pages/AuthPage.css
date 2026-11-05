@@ -55,3 +55,37 @@ form { display: grid; gap: 17px; }
   .field-row { grid-template-columns: 1fr; gap: 16px; }
   .form-heading h2 { font-size: 27px; }
 }
+
+.auth-error {
+  color: #dc2626;
+  font-size: 14px;
+  margin: 12px 0;
+}
+
+.auth-success {
+  color: #15803d;
+  font-size: 14px;
+  margin: 12px 0;
+}
+
+.submit-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.auth-error {
+    color: #dc2626;
+    font-size: 14px;
+    margin: 12px 0;
+}
+
+.auth-success {
+    color: #16a34a;
+    font-size: 14px;
+    margin: 12px 0;
+}
+
+.submit-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
