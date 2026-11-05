@@ -1,10 +1,22 @@
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import AuthFormField from '../components/AuthFormField'
 import LogoMark from '../../../shared/components/LogoMark'
 import './AuthPage.css'
 
 function AuthPage() {
-  const [mode, setMode] = useState('login')
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const [mode, setMode] = useState(
+    location.pathname === '/signup' ? 'signup' : 'login'
+  )
+
+  const changeMode = (newMode) => {
+    setMode(newMode)
+    navigate(newMode === 'signup' ? '/signup' : 'login')
+  }
+
   const isLogin = mode === 'login'
 
   const handleSubmit = (event) => {
@@ -47,8 +59,8 @@ function AuthPage() {
           </div>
 
           <div className="auth-switcher" role="tablist" aria-label="Authentication options">
-            <button type="button" className={isLogin ? 'active' : ''} onClick={() => setMode('login')} role="tab" aria-selected={isLogin}>Log in</button>
-            <button type="button" className={!isLogin ? 'active' : ''} onClick={() => setMode('signup')} role="tab" aria-selected={!isLogin}>Sign up</button>
+            <button type="button" className={isLogin ? 'active' : ''} onClick={() => changeMode('login')} role="tab" aria-selected={isLogin}>Log in</button>
+            <button type="button" className={!isLogin ? 'active' : ''} onClick={() => changeMode('signup')} role="tab" aria-selected={!isLogin}>Sign up</button>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -88,7 +100,7 @@ function AuthPage() {
           </form>
 
           <p className="form-footnote">
-            {isLogin ? <>New to SwiftTrack? <button type="button" onClick={() => setMode('signup')}>Create an account</button></> : <>Already have an account? <button type="button" onClick={() => setMode('login')}>Log in</button></>}
+            {isLogin ? <>New to SwiftTrack? <button type="button" onClick={() => changeMode('signup')}>Create an account</button></> : <>Already have an account? <button type="button" onClick={() => changeMode('login')}>Log in</button></>}
           </p>
         </div>
       </section>
