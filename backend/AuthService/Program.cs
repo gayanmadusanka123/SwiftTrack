@@ -1,3 +1,4 @@
+using AuthService.Configuration;
 using AuthService.Data;
 using AuthService.Models;
 using AuthService.Services;
@@ -42,6 +43,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<IAuthService, AuthBusinessService>();
+
+//Configure JWT settings
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+
+//Register JWT token service
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 var app = builder.Build();
 

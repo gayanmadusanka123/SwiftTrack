@@ -7,10 +7,12 @@ namespace AuthService.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IJwtTokenService _jwtTokenService;
 
-        public AuthService(UserManager<ApplicationUser> userManager)
+        public AuthService(UserManager<ApplicationUser> userManager, IJwtTokenService jwtTokenService)
         {
             _userManager = userManager;
+            _jwtTokenService = jwtTokenService;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -56,6 +58,42 @@ namespace AuthService.Services
                 Email = user.Email!
             };
 
+        }
+
+        public async Task<LoginResponse> LoginAsync(LoginRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if(user == null)
+            {
+                throw new UnauthorizedAccessException("Invalid email or password.");
+            }
+
+            if (!user.IsActive)
+            {
+                throw new UnauthorizedAccessException("Your account is inactive");
+            }
+
+            var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
+
+            if (!passwordValid)
+            {
+                throw new UnauthorizedAccessException("Invalid email or password");
+            }
+
+            var (token, expiresAtUtc) = await _jwtTokenService.GenerateTokenAsync(user);
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return new LoginResponse
+            {
+                AccessToken = token,
+                TokenType = "Bearer",
+                ExpiresAtUtc = expiresAtUtc,
+                UserId = user.Id,
+                Email = user.Email!,
+                Roles = roles
+            };
         }
     }
 }
