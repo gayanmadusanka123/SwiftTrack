@@ -130,6 +130,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+await RoleSeeder.SeedRolesAsync(app.Services);
+await AdminSeeder.SeedAsync(app.Services);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
