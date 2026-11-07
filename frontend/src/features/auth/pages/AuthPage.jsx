@@ -42,7 +42,14 @@ function AuthPage() {
         //save JWT token
         sessionStorage.setItem('accessToken', result.accessToken)
 
-        navigate('/dashboard')
+        if(result.roles.includes('Client')){
+          navigate('/dashboard')
+        }
+
+        if(result.roles.includes('Admin')){
+          navigate('/admin/dashboard')
+        }
+
       } else {
         await register({
           firstName: values.firstName,
