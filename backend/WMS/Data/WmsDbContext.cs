@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WMS.Model;
 
 namespace WMS.Data
 {
@@ -7,5 +8,8 @@ namespace WMS.Data
         public WmsDbContext(DbContextOptions<WmsDbContext> options) : base(options)
         {
         }
+
+        public DbSet<EquipmentCategory> EquipmentCategories { get; set; }
+        public DbSet<EquipmentModel> EquipmentModels { get; set; }
     }
 }
