@@ -65,7 +65,84 @@ public class BookingSoapService : IBookingSoapService
             };
 
         }
-        
+
+        var bookingId = Guid.NewGuid();
+        var unitIds = request.Items.Select(x => x.EquipmentUnitId).ToList();
+
+        var (reserved, reservedError) = await _inventoryClient.ReservedUnitsAtomicalyAsync(bookingId, unitIds, request.StartTime, request.EndTime);
+
+        if (!reserved)
+        {
+            return new BookingResponse
+            {
+                Success = false,
+                Status = BookingStatuses.Rejected,
+                ErrorMessage = reservedError ?? "Selected items are reserved"
+            };
+
+        }
+
+        //calculate the price
+        var priceCalc = _pricingCalculator.Calculate(request);
+
+        var bookingItems = request.Items.Select(item => new BookingItem
+        {
+            BookingItemId = Guid.NewGuid(),
+            BookingId = bookingId,
+            EquipmentUnitId = item.EquipmentUnitId,
+            DailyRate = item.DailyRentalRates,
+            RentalAmount = item.DailyRentalRates * priceCalc.Billabledays,
+            DepositAmount = item.DepositAmount
+        }).ToList();
+
+        var booking = new Booking
+        {
+            BookingId = bookingId,
+            CustomerUserId = request.CustomerUserId,
+            StartTime = request.StartTime,
+            EndTime = request.EndTime,
+            Status = BookingStatuses.PendingPayment,
+            HandOverMethod = request.HandOverMethod.ToString(),
+            ReturnMethod = request.ReturnMethod.ToString(),
+            CreatedAt = DateTime.Now,
+            Items = bookingItems,
+            Price = new BookingPrice
+            {
+                BookingId = bookingId,
+                Currency = "LKR",
+                RentalSubTotal = priceCalc.RentalSubTotal,
+                AdvancedPercent = priceCalc.AdvancePrecent,
+                AdvancedAmount = priceCalc.AdvanceAmount,
+                DepositTotal = priceCalc.DepositTotal,
+                DeliveryFee = priceCalc.DeliveryFee,
+                Discount = priceCalc.Discount,
+                TotalDue = priceCalc.TotalDueAtBooking
+            },
+            Policy = new BookingPolicy
+            {
+                BookingId = bookingId,
+                FreeCancellationWindowHour = 24,
+                LateFeePerHour = 500.0m,
+                GracePeriodInMinute = 60,
+                Terms = "{\"AdvanceRefundableBeforeWindow\":true}"
+            },
+            StatusHistory = new List<BookingStatusHistory>
+            {
+                new()
+                {
+                    HistoryId = Guid.NewGuid(),
+                    BookingId = bookingId,
+                    PreviousStatus = BookingStatuses.Pending,
+                    NewStatus = BookingStatuses.PendingPayment,
+                    ChangedBy = request.CustomerUserId,
+                    ChangedAt = DateTime.Now,
+                    Reason = "Booking created and inventory temporary reserved"
+                }
+            }
+        };
+
+        var requestEvent = new BookingReq
+
 
 
     }
