@@ -31,14 +31,43 @@ public class BookingSoapService : IBookingSoapService
         _inventoryClient = inventoryClient;
 
     }
-    public Task<BookingResponse> CancelBookingAsync(CancelBookingRequest request)
+    public async Task<BookingResponse> CancelBookingAsync(CancelBookingRequest request)
     {
-        throw new NotImplementedException();
+
     }
 
-    public Task<BookingResponse> CreateBookingAsync(CreateBookingRequest request)
+    public async Task<BookingResponse> CreateBookingAsync(CreateBookingRequest request)
     {
-        throw new NotImplementedException();
+        if (request.EndTime <= request.StartTime)
+        {
+            return new BookingResponse { Success = false, ErrorMessage = "End time must be later than start time" };
+        }
+        if (request.Items == null || request.Items.Count == 0)
+        {
+            return new BookingResponse
+            {
+                Success = false,
+                ErrorMessage = "Please enter the number of items required"
+            };
+        }
+
+        //verify the customer identity
+        var (isVerified, reason) = await _verificationClient.CheckCustomerEligibility(request.CustomerUserId);
+
+        if (!isVerified)
+        {
+            return new BookingResponse
+            {
+                Success = false,
+                Status = BookingStatuses.Rejected,
+                ErrorMessage = reason ?? "Customer verification  failed"
+
+            };
+
+        }
+        
+
+
     }
 
     public Task<BookingDetailsResponse> GetBookingDetailsAsync(GetBookingDetailsRequest request)
