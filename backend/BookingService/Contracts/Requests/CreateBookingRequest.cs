@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using BookingService.Contracts.Enum;
 
 namespace BookingService.Contracts.Requests;
 
@@ -16,10 +17,10 @@ public class CreateBookingRequest
     public DateTime EndTime { get; set; }
 
     [DataMember(IsRequired = true, Order = 4)]
-    public string HandOverMethod { get; set; } = string.Empty;
+    public HandOverMethodType HandOverMethod { get; set; } 
 
     [DataMember(IsRequired = true, Order = 5)]
-    public string ReturnMethod { get; set; } = string.Empty;
+    public ReturnMethodType ReturnMethod { get; set; }
 
     [DataMember(IsRequired = false, Order = 6)]
     public decimal DiscountAmount{get; set;}
