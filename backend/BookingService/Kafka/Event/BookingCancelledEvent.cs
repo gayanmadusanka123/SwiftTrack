@@ -2,7 +2,10 @@ using System;
 
 namespace BookingService.Kafka.Event;
 
-public class BookingCancelledEvent
-{
-
-}
+public  record BookingCancelledEvent(
+    Guid EventId,
+    Guid BookingId,
+    Guid CustomerUserId,
+    string Reason,
+    DateTime CancelledAt
+);

@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using BookingService.Kafka.Configuration;
 using BookingService.Kafka.Publisher;
 using Confluent.Kafka;
@@ -55,19 +56,80 @@ public class KafkaConsumerWorker : BackgroundService
             {
                 try
                 {
-                    
+                    var result = consumer.Consume(stoppingToken);
+                    if (result?.Message == null)
+                        continue;
+
+                    _logger.LogInformation("Recieved Kafka msg from topics {Topic} [Partition : {Partition},Offeset : {Offset}]",
+                    result.Topic, result.Partition.Value, result.Offset.Value);
+
+                    await DispatchMessageAsync(result.Topic, result.Message.Value, stoppingToken);
+
+                    //commit offset only after successfully db processing
+                    consumer.Commit(result);
                 }
-                catch (System.Exception)
+                catch (ConsumeException ex)
                 {
-                    
-                    throw;
+
+                    _logger.LogError(ex, "kafka consume error {Reason}", ex.Error.Reason);
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing consumed kafka message");
                 }
             }
         }
-        catch (System.Exception)
+        finally
         {
-            
-            throw;
+
+            consumer.Close();
         }
+    }
+
+    private async Task DispatchMessageAsync(string topic, string payload, CancellationToken stoppingToken)
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        if (topic == _kafkaOptions.Topics.PaymentSucceeded)
+        {
+            var evt = JsonSerializer.Deserialize<PaymentSucceededIntegrationEvent>(payload);
+
+            if (evt != null)
+            {
+                var handler = scope.ServiceProvider.GetRequiredService<PaymentSucceededConsumer>();
+                await handler.HandleAsync(evt,stoppingToken);
+
+            }
+        }
+        else if(topic == _kafkaOptions.Topics.PaymentFailed)
+        {
+            var evt = JsonSerializer.Deserialize<PaymentFailedIntergrationEvent>(payload);
+
+            if (evt != null)
+            {
+                var handler = scope.ServiceProvider.GetRequiredService<PaymentFailedConsumer>();
+                await handler.HandleAsync(evt,stoppingToken);
+
+            }
+        }
+        else if(topic == _kafkaOptions.Topics.ReservedExpired)
+        {
+            var evt = JsonSerializer.Deserialize<ReservationExpiredIntergrationEvent>(payload);
+
+            if (evt != null)
+            {
+                var handler = scope.ServiceProvider.GetRequiredService<ReservationExpiredConsumer>();
+                await handler.HandleAsync(evt,stoppingToken);
+
+            }
+            
+        }
+
+
     }
 }
