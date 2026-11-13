@@ -9,7 +9,7 @@ public class KafkaOptions
     public string BootstrapServers {get; set;} = "localhost:9092";
     public string GroupId {get; set;} = "swifttrack-booking-service-group";
 
-    public string AutoOffsetReser {get; set;} = "Earliest";
+    public string AutoOffsetReset {get; set;} = "Earliest";
 
     public KafkaTopics Topics {get; set;} = new();
     
