@@ -11,7 +11,7 @@ public class OutBoxMasaages
 
     public DateTime CreatedAt {get;set;} = DateTime.Now;
 
-    public DateTime ProcessedAt {get;set;} 
+    public DateTime? ProcessedAt {get;set;} 
 
     public string? Error{get ; set;}
 
