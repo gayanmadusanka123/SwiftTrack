@@ -35,6 +35,7 @@ builder.Services.AddHttpClient<IInventoryClient, InventoryClient>(
     }
 );
 
+//Domain Services & CoreWCF Registration
 builder.Services.AddScoped<PricingCalculator>();
 builder.Services.AddTransient<BookingSoapService>();
 
@@ -42,6 +43,7 @@ builder.Services.AddServiceModelServices();
 builder.Services.AddServiceModelMetadata();
 builder.Services.AddSingleton<IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior>();
 
+//Kafka Event Handlers & Hosted Background Workers
 builder.Services.AddScoped<PaymentSucceededConsumer>();
 builder.Services.AddScoped<PaymentFailedConsumer>();
 builder.Services.AddScoped<ReservationExpiredConsumer>();
@@ -52,6 +54,7 @@ builder.Services.AddHostedService<KafkaConsumerWorker>();
 
 var app = builder.Build();
 
+// Configure CoreWCF SOAP Endpoint and WSDL Metadata
 app.UseServiceModel(
     serviceBuilder =>
     {
