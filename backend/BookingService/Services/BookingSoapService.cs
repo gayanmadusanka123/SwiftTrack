@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using BookingService.ConnectedServices.Interfaces;
 using BookingService.Contracts;
 using BookingService.Contracts.Requests;
@@ -152,19 +153,61 @@ public class BookingSoapService : IBookingSoapService
             unitIds,
             DateTime.Now
         );
-        
+
+        var outboxMessage = new OutBoxMasaages
+        {
+            OutBoxMasaageId = requestEvent.EventId,
+            EventType = nameof(BookingRequestedEvent),
+            Payload = JsonSerializer.Serialize(requestEvent)
+        };
+
+        _dbContext.Bookings.Add(booking);
+        _dbContext.outBoxMasaages.Add(outboxMessage);
+        await _dbContext.SaveChangesAsync();
+
+        return new BookingResponse
+        {
+            Success = true,
+            BookingId = bookingId,
+            Status = booking.Status,
+            RentalSubTotal = priceCalc.RentalSubTotal,
+            DepositTotal = priceCalc.DepositTotal,
+            DeliveryFee = priceCalc.DeliveryFee,
+            TotalDue = priceCalc.TotalDueAtBooking
+        };
 
 
 
     }
 
-    public Task<BookingDetailsResponse> GetBookingDetailsAsync(GetBookingDetailsRequest request)
+    public async Task<BookingDetailsResponse> GetBookingDetailsAsync(GetBookingDetailsRequest request)
     {
-        throw new NotImplementedException();
+        var booking = await _dbContext.Bookings
+        .Include(b => b.Items)
+        .Include(b => b.Price)
+        .AsNoTracking()
+        .FirstOrDefaultAsync(b => b.BookingId == request.BookingId);
+
+        if (booking == null || booking.Price == null)
+        {
+            return new BookingDetailsResponse { Found = false };
+        }
+
+        return new MapToDetailsResponse(booking);
     }
 
     public Task<List<BookingDetailsResponse>> GetCustomerBookingAsync(Guid CustomerId)
     {
         throw new NotImplementedException();
+    }
+}
+
+internal class MapToDetailsResponse : BookingDetailsResponse
+{
+    private Booking booking;
+
+    public MapToDetailsResponse(Booking booking)
+    {
+        this.booking = booking;
     }
 }
