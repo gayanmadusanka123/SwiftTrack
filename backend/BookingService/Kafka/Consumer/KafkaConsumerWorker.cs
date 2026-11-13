@@ -102,32 +102,32 @@ public class KafkaConsumerWorker : BackgroundService
             if (evt != null)
             {
                 var handler = scope.ServiceProvider.GetRequiredService<PaymentSucceededConsumer>();
-                await handler.HandleAsync(evt,stoppingToken);
+                await handler.HandleAsync(evt, stoppingToken);
 
             }
         }
-        else if(topic == _kafkaOptions.Topics.PaymentFailed)
+        else if (topic == _kafkaOptions.Topics.PaymentFailed)
         {
-            var evt = JsonSerializer.Deserialize<PaymentFailedIntergrationEvent>(payload);
+            var evt = JsonSerializer.Deserialize<PaymentFailedIntegrationEvent>(payload);
 
             if (evt != null)
             {
                 var handler = scope.ServiceProvider.GetRequiredService<PaymentFailedConsumer>();
-                await handler.HandleAsync(evt,stoppingToken);
+                await handler.HandleAsync(evt, stoppingToken);
 
             }
         }
-        else if(topic == _kafkaOptions.Topics.ReservedExpired)
+        else if (topic == _kafkaOptions.Topics.ReservedExpired)
         {
-            var evt = JsonSerializer.Deserialize<ReservationExpiredIntergrationEvent>(payload);
+            var evt = JsonSerializer.Deserialize<ReservationExpiredIntegrationEvent>(payload);
 
             if (evt != null)
             {
                 var handler = scope.ServiceProvider.GetRequiredService<ReservationExpiredConsumer>();
-                await handler.HandleAsync(evt,stoppingToken);
+                await handler.HandleAsync(evt, stoppingToken);
 
             }
-            
+
         }
 
 

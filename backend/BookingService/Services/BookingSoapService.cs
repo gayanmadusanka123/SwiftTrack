@@ -3,6 +3,7 @@ using BookingService.ConnectedServices.Interfaces;
 using BookingService.Contracts;
 using BookingService.Contracts.Requests;
 using BookingService.Contracts.Responses;
+using BookingService.Kafka.Event;
 using BookingService.Model;
 using BookingService.Model.Entity;
 using CoreWCF;
@@ -141,7 +142,17 @@ public class BookingSoapService : IBookingSoapService
             }
         };
 
-        var requestEvent = new BookingReq
+        var requestEvent = new BookingRequestedEvent(
+            Guid.NewGuid(),
+            bookingId,
+            request.CustomerUserId,
+            request.StartTime,
+            request.EndTime,
+            priceCalc.TotalDueAtBooking,
+            unitIds,
+            DateTime.Now
+        );
+        
 
 
 
