@@ -43,7 +43,7 @@ public class PaymentSucceededConsumer
         string oldStatus = booking.Status;
         booking.Status = BookingStatuses.Confirmed;
 
-        db.bookingStatusHistories.Add(
+        db.BookingStatusHistories.Add(
             new BookingStatusHistory
             {
                 HistoryId = Guid.NewGuid(),
@@ -66,7 +66,7 @@ public class PaymentSucceededConsumer
             DateTime.Now
         );
 
-        db.outBoxMasaages.Add(new OutBoxMasaages
+        db.OutBoxMasaages.Add(new OutBoxMasaages
         {
             OutBoxMasaageId = ConfirmedEvent.EventId,
             EventType = nameof(BookingConfirmedEvent),

@@ -41,7 +41,7 @@ public class OutBoxPublisher : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
 
-                var pendingMessages = await db.outBoxMasaages
+                var pendingMessages = await db.OutBoxMasaages
                 .Where(m => m.ProcessedAt == null)
                 .OrderBy(m => m.CreatedAt)
                 .Take(20)

@@ -35,6 +35,66 @@ public class BookingSoapService : IBookingSoapService
     }
     public async Task<BookingResponse> CancelBookingAsync(CancelBookingRequest request)
     {
+        var booking = await _dbContext.Bookings
+        .Include(b => b.Price)
+        .FirstOrDefaultAsync(b => b.BookingId == request.BookingId);
+
+        if (booking == null)
+        {
+            return new BookingResponse { Success = false, ErrorMessage = "Booking not found" };
+        }
+
+        if (!BookingStatusTransition.CanTransition(booking.Status, BookingStatuses.Cancelled))
+        {
+            return new BookingResponse
+            {
+                Success = false,
+                BookingId = booking.BookingId,
+                Status = booking.Status,
+                ErrorMessage = $"Cannot cancel a booking in '{booking.Status}' status"
+            };
+
+        }
+
+        string previousStatus = booking.Status;
+        booking.Status = BookingStatuses.Cancelled;
+
+        _dbContext.BookingStatusHistories.Add(new BookingStatusHistory
+        {
+            HistoryId = Guid.NewGuid(),
+            BookingId = booking.BookingId,
+            PreviousStatus = previousStatus,
+            NewStatus = BookingStatuses.Cancelled,
+            ChangedBy = request.ChangedBy,
+            ChangedAt = DateTime.Now,
+            Reason = request.Reason
+
+        });
+
+        var cancelEvent = new BookingCancelledEvent(
+            Guid.NewGuid(),
+            booking.BookingId,
+            booking.CustomerUserId,
+            request.Reason,
+            DateTime.Now
+        );
+
+        _dbContext.OutBoxMasaages.Add(new OutBoxMasaages
+        {
+            OutBoxMasaageId = cancelEvent.EventId,
+            EventType = nameof(BookingCancelledEvent),
+            Payload = JsonSerializer.Serialize(cancelEvent)
+        });
+
+        await _dbContext.SaveChangesAsync();
+        await _inventoryClient.ReleaseReservationAsync(booking.BookingId);
+
+        return new BookingResponse
+        {
+            Success = true,
+            BookingId = booking.BookingId,
+            Status = booking.Status
+        };
 
     }
 
@@ -162,7 +222,7 @@ public class BookingSoapService : IBookingSoapService
         };
 
         _dbContext.Bookings.Add(booking);
-        _dbContext.outBoxMasaages.Add(outboxMessage);
+        _dbContext.OutBoxMasaages.Add(outboxMessage);
         await _dbContext.SaveChangesAsync();
 
         return new BookingResponse
@@ -193,21 +253,55 @@ public class BookingSoapService : IBookingSoapService
             return new BookingDetailsResponse { Found = false };
         }
 
-        return new MapToDetailsResponse(booking);
+        return MapToDetailsResponse(booking);
     }
 
-    public Task<List<BookingDetailsResponse>> GetCustomerBookingAsync(Guid CustomerId)
+    public async Task<List<BookingDetailsResponse>> GetCustomerBookingAsync(Guid CustomerId)
     {
-        throw new NotImplementedException();
+        var booking = await _dbContext.Bookings
+       .Include(b => b.Items)
+       .Include(b => b.Price)
+       .AsNoTracking()
+       .Where(b => b.CustomerUserId == CustomerId)
+       .OrderByDescending(b => b.CreatedAt)
+       .ToListAsync();
+
+        return booking
+        .Where(b => b.Price != null)
+        .Select(MapToDetailsResponse)
+        .ToList();
+
+    }
+
+    private static BookingDetailsResponse MapToDetailsResponse(Booking booking)
+    {
+        return new BookingDetailsResponse
+        {
+            Found = true,
+            BookingId = booking.BookingId,
+            CustomerUserId = booking.CustomerUserId,
+            StartTime = booking.StartTime,
+            EndTime = booking.EndTime,
+            Status = booking.Status,
+            HandoverMethod = booking.HandOverMethod,
+            ReturnMethod = booking.ReturnMethod,
+            Currency = booking.Price!.Currency,
+            RentalSubtotal = booking.Price.RentalSubTotal,
+            AdvancePercent = booking.Price.AdvancedPercent,
+            AdvanceAmount = booking.Price.AdvancedAmount,
+            DepositTotal = booking.Price.DepositTotal,
+            DeliveryFee = booking.Price.DeliveryFee,
+            Discount = booking.Price.Discount,
+            TotalDue = booking.Price.TotalDue,
+            Items = booking.Items.Select(i => new BookingItemResponseDto
+            {
+                BookingItemId = i.BookingItemId,
+                EquipmentUnitId = i.EquipmentUnitId,
+                DailyRentalRates = i.DailyRate,
+                RentalAmount = i.RentalAmount,
+                DepositAmount = i.DepositAmount
+            }).ToList()
+        };
     }
 }
 
-internal class MapToDetailsResponse : BookingDetailsResponse
-{
-    private Booking booking;
-
-    public MapToDetailsResponse(Booking booking)
-    {
-        this.booking = booking;
-    }
-}

@@ -29,7 +29,7 @@ public class ReservationExpiredConsumer
         string oldStatus = booking.Status;
         booking.Status = BookingStatuses.Cancelled;
 
-        db.bookingStatusHistories.Add(
+        db.BookingStatusHistories.Add(
             new BookingStatusHistory
             {
                 HistoryId = Guid.NewGuid(),

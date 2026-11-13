@@ -11,9 +11,9 @@ public class BookingDbContext : DbContext
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BookingItem> BookingItems => Set<BookingItem>();
     public DbSet<BookingPrice> BookingPrices => Set<BookingPrice>();
-    public DbSet<BookingPolicy> bookingPolicies => Set<BookingPolicy>();
-    public DbSet<BookingStatusHistory> bookingStatusHistories => Set<BookingStatusHistory>();
-    public DbSet<OutBoxMasaages> outBoxMasaages => Set<OutBoxMasaages>();
+    public DbSet<BookingPolicy> BookingPolicies => Set<BookingPolicy>();
+    public DbSet<BookingStatusHistory> BookingStatusHistories => Set<BookingStatusHistory>();
+    public DbSet<OutBoxMasaages> OutBoxMasaages => Set<OutBoxMasaages>();
 
 
 
