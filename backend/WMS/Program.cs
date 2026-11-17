@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WMS.Data;
+using WMS.Interfaces;
+using WMS.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +15,14 @@ builder.Services.AddDbContext<WmsDbContext>(
         options => options.UseSqlServer(connectionString)
     );
 
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.MapControllers();
 
 app.UseHttpsRedirection();
 

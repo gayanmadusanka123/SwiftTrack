@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './AdminDashboardPage.css';
+import { apiRequest } from '../../../shared/services/apiClient';
 
 const initialEquipment = [
   {
@@ -194,7 +195,24 @@ function AdminDashboardPage() {
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     description: '',
-  })
+  });
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    async function fetchInitialData() {
+      try{
+        const [equipmentData, categoryData] = await Promise.all([
+          apiRequest('/api/equipment'),
+          apiRequest('/api/categories'),
+        ]);
+        setEquipment(equipmentData);
+        setCategories(categoryData);
+      }catch(error){
+        console.error("Failed to load data", error.message);
+      }
+    }
+    fetchInitialData();
+  }, []);
 
   const filteredEquipment = useMemo(
     () =>
@@ -229,13 +247,22 @@ function AdminDashboardPage() {
     setModal('category');
   };
 
-  const saveCategory = (event) => {
+  const saveCategory = async (event) => {
     event.preventDefault();
 
     if (!categoryForm.name.trim()) return;
 
-    console.log(categoryForm);
+    try{
+      const newCategory = await apiRequest('/api/categories', {
+        method: 'POST',
+        body: JSON.stringify(categoryForm),
+      });
 
+    } catch (error){
+      alert(error.message);
+    }
+
+    setCategories(current => [...current, newCategory]);
     setModal(null);
   };
 
