@@ -7,9 +7,7 @@ namespace WMS.Model
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Brand { get; set; } = string.Empty;
-
-        [Precision(18, 2)]
-        public decimal DailyRentalPrice { get; set; } 
+        [Precision(18, 2)]public decimal DailyRentalPrice { get; set; } 
         public int EquipmentCategoryId { get; set; }
         public EquipmentCategory EquipmentCategory { get; set; } = null!;
     }
