@@ -13,17 +13,19 @@ builder.Services.AddCors(options =>
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+app.UseCors("AllowReactApp");
 
 app.MapGet("/health", () => Results.Ok(new
 {
     status = "Healthy",
     service = "ApiGateway"
 }));
-
-app.UseHttpsRedirection();
-
-app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -202,8 +202,8 @@ function AdminDashboardPage() {
     async function fetchInitialData() {
       try{
         const [equipmentData, categoryData] = await Promise.all([
-          apiRequest('/api/equipment'),
-          apiRequest('/api/categories'),
+          apiRequest('/equipment'),
+          apiRequest('/categories'),
         ]);
         setEquipment(equipmentData);
         setCategories(categoryData);
@@ -253,17 +253,23 @@ function AdminDashboardPage() {
     if (!categoryForm.name.trim()) return;
 
     try{
-      const newCategory = await apiRequest('/api/categories', {
+      const newCategory = await apiRequest('/categories', {
         method: 'POST',
         body: JSON.stringify(categoryForm),
       });
 
+      setCategories(current => [...current, newCategory]);
+
+      setCategoryForm({
+        name: '',
+        description: '',
+      });
+
+      setModal(null);
+
     } catch (error){
       alert(error.message);
     }
-
-    setCategories(current => [...current, newCategory]);
-    setModal(null);
   };
 
   const saveEquipment = (event) => {
