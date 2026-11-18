@@ -6,7 +6,7 @@ namespace BookingService.Model;
 
 public class BookingDbContext : DbContext
 {
-    public BookingDbContext(DbContextOptions<BookingDbContext> options) { }
+    public BookingDbContext(DbContextOptions<BookingDbContext> options) :base(options){ }
 
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BookingItem> BookingItems => Set<BookingItem>();
@@ -23,7 +23,7 @@ public class BookingDbContext : DbContext
 
         modelBuilder.Entity<OutBoxMasaages>(b =>
         {
-            b.ToTable("OutboxMassages");
+            b.ToTable("OutboxMessages");
             b.HasKey(x => x.OutBoxMasaageId);
             b.Property(x => x.EventType).HasMaxLength(128).IsRequired();
             b.HasIndex(x => x.ProcessedAt);

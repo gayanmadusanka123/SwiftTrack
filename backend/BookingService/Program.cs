@@ -11,14 +11,19 @@ using CoreWCF.Channels;
 using CoreWCF.Configuration;
 using CoreWCF.Description;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 // db
-builder.Services.AddDbContext<BookingDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("BookingDb")));
+builder.Services.AddDbContext<BookingDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("BookingServiceConnection")));
 
 // Configure Kafka Options
 builder.Services.Configure<KafkaOptions>(
     builder.Configuration.GetSection(KafkaOptions.SectionName));
+
+builder.Services.AddSingleton(
+    sp => sp.GetRequiredService<IOptions<KafkaOptions>>().Value
+);
 
 // put the real port for them these are just mocks
 builder.Services.AddHttpClient<IverificationClient, VerificationClient>(
