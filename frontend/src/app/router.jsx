@@ -22,6 +22,10 @@ const router = createBrowserRouter([
         element: <DashboardPage />
     },
     {
+        path: '/bookings',
+        element: <DashboardPage />
+    },
+    {
         path: '/admin/dashboard',
         element: <AdminDashboardPage />
     }
